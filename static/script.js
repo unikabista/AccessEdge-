@@ -24,7 +24,8 @@ const startCamera = async () => {
     if (stream) stream.getTracks().forEach(track => track.stop());
 
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: currentFacingMode }
+      video: { facingMode: currentFacingMode },
+      audio: true // ✅ Add this!
     });
 
     video.srcObject = stream;
@@ -83,6 +84,34 @@ function capturePhoto() {
       speakText("Something went wrong capturing the photo.");
     });
 }
+function readTextFromCamera() {
+  console.log("📖 OCR capture triggered");
+
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  const imageData = canvas.toDataURL('image/png');
+
+  speakText("Reading text. Please hold steady.");
+
+  Tesseract.recognize(imageData, 'eng', {
+    logger: m => console.log(m)
+  }).then(({ data: { text } }) => {
+    if (text.trim()) {
+      console.log("📝 OCR Text:", text.trim());
+      speakText("I read: " + text.trim());
+    } else {
+      speakText("Sorry, I couldn't detect any readable text.");
+    }
+  }).catch(err => {
+    console.error("OCR error:", err);
+    speakText("There was an error reading the text.");
+  });
+}
+
 
 // 🎙️ Voice commands
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -107,7 +136,13 @@ if (SpeechRecognition) {
     } else if (command.includes('read caption') || command.includes('speak caption')) {
       const text = captionDisplay.innerText.replace('📝 ', '');
       speakText(text);
-    } else {
+    }  else if (
+      command.includes('read text') ||
+      command.includes('what does it say') ||
+      command.includes('read the sign')
+    ) {
+      readTextFromCamera();
+    }else {
       console.log('🟡 Unrecognized voice command');
     }
   };
