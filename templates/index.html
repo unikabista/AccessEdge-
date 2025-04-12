@@ -4,15 +4,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AccessEdge - AI Captioning</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#007BFF" />
+
 </head>
 <body>
     <h1>AccessEdge</h1>
     <p>Helping the blind understand images using AI</p>
-    <video id="video" autoplay></video>
-    <button id="captureBtn">Capture</button>
-    <p id="caption"></p>
+    <video id="video" autoplay playsinline muted></video>
+    <button id="captureBtn">📸 Capture</button>
+    <button id="flipCamera">🔄 Flip Camera</button>
+    <button onclick="speakText('This is a test caption.')">🔊 Test Speak</button>
+
+    <div id="caption"></div>
+    
     <p><strong>Voice commands:</strong> "capture photo", "read caption"</p>
     <script src="/static/script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/static/service-worker.js')
+            .then(() => console.log("✅ Service Worker registered"))
+            .catch(err => console.error("❌ Service Worker error:", err));
+        }
+      </script>
+      
 </body>
 </html>
 
