@@ -1,21 +1,18 @@
 const video = document.getElementById('video');
-const captureBtn = document.getElementById('captureBtn');
 const captionDisplay = document.getElementById('caption');
-const flipBtn = document.getElementById('flipCamera');
 
+// 🔓 Unlock autoplay audio on first interaction
 window.addEventListener('click', () => {
-    // Unlock autoplay audio by speaking and immediately cancelling
-    const unlock = new SpeechSynthesisUtterance('');
-    window.speechSynthesis.speak(unlock);
-    window.speechSynthesis.cancel();
-    console.log('🔓 Audio unlocked by user tap');
-  }, { once: true });
-  
+  const unlock = new SpeechSynthesisUtterance('');
+  window.speechSynthesis.speak(unlock);
+  window.speechSynthesis.cancel();
+  console.log('🔓 Audio unlocked by user tap');
+}, { once: true });
 
-let currentFacingMode = "environment"; // Start with back camera
+let currentFacingMode = "environment";
 let stream = null;
 
-// Start camera based on current facing mode
+// 🎥 Start the camera with specified facing mode
 const startCamera = async () => {
   try {
     if (stream) {
@@ -33,19 +30,37 @@ const startCamera = async () => {
   }
 };
 
-// Flip camera button
-flipBtn.addEventListener("click", () => {
-  currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-  startCamera();
-});
+// 🔊 Speak text aloud
+function speakText(text) {
+  console.log('🗣️ Attempting to speak:', text);
 
-// Load camera on page load
-window.addEventListener("load", () => {
-  startCamera();
-});
+  if (!('speechSynthesis' in window)) {
+    console.warn('❌ TTS not supported');
+    return;
+  }
 
-// Capture photo from video feed
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.pitch = 1;
+  utterance.rate = 1;
+  utterance.volume = 1;
+
+  utterance.onstart = () => console.log('🟢 TTS started');
+  utterance.onend = () => console.log('✅ TTS finished');
+  utterance.onerror = (err) => console.error('❌ TTS error:', err);
+
+  window.speechSynthesis.speak(utterance);
+}
+
+// 📸 Capture a photo and fetch caption
 function capturePhoto() {
+  console.log("📸 capturePhoto() triggered");
+
+  const clickSound = document.getElementById('clickSound');
+  if (clickSound) clickSound.play();
+
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -64,46 +79,23 @@ function capturePhoto() {
     .then(res => res.json())
     .then(data => {
       if (data.caption) {
-        captionDisplay.innerText = '📝 Caption: ' + data.caption;
-        speakText(data.caption);
+        const finalCaption = '📝 Caption: ' + data.caption;
+        captionDisplay.innerText = finalCaption;
+        setTimeout(() => {
+          speakText(data.caption);
+        }, 200); // small delay for DOM update
       } else {
         captionDisplay.innerText = '❌ Failed to get caption.';
+        speakText("Sorry, I couldn't describe the scene.");
       }
     })
     .catch(err => {
       console.error('Error:', err);
+      speakText("Something went wrong capturing the photo.");
     });
 }
 
-// Speak the given text aloud
-function speakText(text) {
-    console.log('🗣️ Attempting to speak:', text);
-  
-    if (!('speechSynthesis' in window)) {
-      console.warn('❌ TTS not supported');
-      return;
-    }
-  
-    window.speechSynthesis.cancel(); // cancel any previous
-  
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.pitch = 1;
-    utterance.rate = 1;
-    utterance.volume = 1;
-  
-    utterance.onstart = () => console.log('🟢 TTS started');
-    utterance.onend = () => console.log('✅ TTS finished');
-    utterance.onerror = (err) => console.error('❌ TTS error:', err);
-  
-    window.speechSynthesis.speak(utterance);
-  }
-  
-
-// Button click to capture photo
-captureBtn.addEventListener('click', capturePhoto);
-
-// Voice recognition for commands
+// 🎙️ Voice recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (SpeechRecognition) {
@@ -116,17 +108,47 @@ if (SpeechRecognition) {
     const command = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
     console.log('🎙️ Voice command:', command);
 
-    if (command.includes('capture photo') || command.includes('take photo')) {
+    if (
+      command.includes('capture') ||
+      command.includes('take') ||
+      command.includes('photo') ||
+      command.includes('picture') ||
+      command.includes('snap')
+    ) {
+      console.log("🟢 Voice matched: capturePhoto()");
       capturePhoto();
-    } else if (command.includes('read caption') || command.includes('speak caption')) {
+    } 
+    else if (
+      command.includes('flip camera') ||
+      command.includes('switch camera')
+    ) {
+      currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+      startCamera();
+      speakText("Camera flipped");
+    } 
+    else if (
+      command.includes('read caption') ||
+      command.includes('speak caption')
+    ) {
       const text = captionDisplay.innerText.replace('📝 Caption: ', '');
       speakText(text);
-    } else {
-      console.log('Unrecognized voice command.');
+    } 
+    else {
+      console.log('🟡 Unrecognized voice command.');
     }
+  };
+
+  recognition.onend = () => {
+    console.log("🔁 Voice recognition restarted");
+    recognition.start();
   };
 
   recognition.start();
 } else {
   console.log('❌ Speech recognition not supported in this browser.');
 }
+
+// 🚀 Start camera on load
+window.addEventListener("load", () => {
+  startCamera();
+});
