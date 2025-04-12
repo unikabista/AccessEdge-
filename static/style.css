@@ -1,10 +1,9 @@
 body {
-  background: url("static/second-page.png") no-repeat center center fixed;
-  background-size: cover;
   margin: 0;
-  padding: 0;
-  font-family: 'Helvetica Neue', sans-serif;
-  color: #fff;
+  font-family: 'Arial', sans-serif;
+  background: url("/static/second-page.png") no-repeat center center fixed;
+  background-size: cover;
+  overflow: hidden;
 }
 
 #welcomeScreen {
@@ -16,11 +15,21 @@ body {
   height: 100vh;
 }
 #video {
-  width: 100%;
-  max-width: 480px;
-  border: 2px solid #ccc;
-  margin-bottom: 10px;
+  position: relative;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85vw;
+  max-width: 600px;
+  aspect-ratio: 4 / 3; /* maintain a standard webcam ratio */
+  object-fit: cover; /* ✅ crop to fill frame */
+  border: 6px solid #ffffffcc;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background-color: #000;
+  z-index: 1;
 }
+
 button {
   padding: 10px 20px;
   font-size: 16px;
@@ -50,16 +59,18 @@ button {
 /* Caption box styling */
 #captionBox {
   position: absolute;
-  bottom: 5%;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.8);
-  color: #222;
-  padding: 1rem 2rem;
-  border-radius: 20px;
-  max-width: 80%;
-  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid #a98ff5;
+  border-radius: 16px;
+  padding: 18px 26px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #482674;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  z-index: 10;
+  max-width: 80%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 2;
 }
