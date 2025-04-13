@@ -1,5 +1,0 @@
-﻿torch
-transformers
-opencv-python
-Pillow
-pyttsx3

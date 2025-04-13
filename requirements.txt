@@ -1,4 +1,5 @@
-﻿torch
+﻿Flask
+torch
 transformers
 opencv-python
 Pillow
@@ -6,4 +7,9 @@ pyttsx3
 gunicorn
 tesseract
 tesseract-ocr
+pytesseract
+tqdm
+numpy
+requests
+
 
