@@ -127,13 +127,13 @@ if (SpeechRecognition) {
     const command = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
     console.log('🎙️ Command:', command);
 
-    if (command.includes('capture') || command.includes('take') || command.includes('photo') || command.includes('picture') || command.includes('snap')) {
+    if (command.includes('capture') || command.includes('take') || command.includes('photo')|| command.includes('describe')|| command.includes('picture') || command.includes('snap')) {
       capturePhoto();
     } else if (command.includes('flip camera') || command.includes('switch camera')) {
       currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
       startCamera();
       speakText("Camera flipped");
-    } else if (command.includes('read caption') || command.includes('speak caption')) {
+    } else if (command.includes('read caption') ||command.includes('read the caption') || command.includes('speak the caption')|| command.includes('speak caption')) {
       const text = captionDisplay.innerText.replace('📝 ', '');
       speakText(text);
     }  else if (
@@ -156,7 +156,7 @@ if (SpeechRecognition) {
 window.addEventListener("load", () => {
   setTimeout(() => {
     splash.style.display = 'none';
-    speakText("Welcome to AccessEdge. Say capture photo or flip camera.");
+    speakText("Welcome to Dristi. Say capture photo or flip camera.");
     startCamera();
     recognition?.start();
   }, 3000);
