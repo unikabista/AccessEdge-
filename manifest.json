@@ -16,7 +16,21 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "language_mappings": {
+    "English": "en",
+    "Spanish": "es",
+    "French": "fr",
+    "German": "de",
+    "Italian": "it",
+    "Portuguese": "pt",
+    "Dutch": "nl",
+    "Russian": "ru",
+    "Japanese": "ja",
+    "Korean": "ko",
+    "Chinese": "zh",
+    "Hindi": "hi"
+  }
 }
 
   

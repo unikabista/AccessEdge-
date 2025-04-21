@@ -1,0 +1,10 @@
+flask==3.0.2
+pillow>=9.0.0
+transformers>=4.30.0
+torch>=2.0.0
+gTTS
+requests
+translate
+numpy>=2.0.0
+accelerate
+bitsandbytes 

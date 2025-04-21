@@ -2,44 +2,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dristi</title>
+    <title>AccessEdge - Visual Assistant for the Visually Impaired</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<link rel="icon" type="image/png" href="{{ url_for('static', filename='icon-192.png') }}">
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
-
-
-
-
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon-192.png') }}">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
-<body></body>
-    <audio id="clickSound" src="/static/click.mp3" preload="auto"></audio>
-    <video id="video" autoplay playsinline muted></video>
-
-    <div id="welcomeScreen" class="splash">
-      <img src="{{ url_for('static', filename='Welcome!.png') }}" />
+<body>
+    <!-- Splash Screen -->
+    <div id="welcomeScreen" class="splash-screen">
+        <img src="{{ url_for('static', filename='Welcome!.png') }}" alt="Welcome to AccessEdge">
+        <p>Loading...</p>
     </div>
 
-<!-- Visible, styled caption display -->
-<div id="captionBox" aria-live="polite">Listening for voice commands...</div>
+    <header role="banner">
+        <h1>AccessEdge Visual Assistant</h1>
+    </header>
 
+    <main role="main">
+        <section aria-labelledby="camera-section">
+            <h2 id="camera-section" class="visually-hidden">Camera View</h2>
+            <video id="video" autoplay playsinline muted aria-label="Camera feed"></video>
+        </section>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+        <section aria-labelledby="controls-section">
+            <h2 id="controls-section" class="visually-hidden">Controls</h2>
+            
+            <!-- Status Messages -->
+            <div id="statusMessages" aria-live="polite" class="visually-hidden"></div>
+        </section>
 
+        <!-- Caption Display with proper ARIA attributes -->
+        <section aria-labelledby="caption-section">
+            <h2 id="caption-section" class="visually-hidden">Image Description</h2>
+            <div id="captionBox" 
+                 role="status" 
+                 aria-live="polite"
+                 aria-atomic="true">
+                Ready to assist. Say "capture" to take a photo.
+            </div>
+        </section>
+    </main>
+
+    <footer role="contentinfo">
+        <p>AccessEdge - Making the visual world accessible</p>
+    </footer>
+
+    <audio id="clickSound" src="/static/click.mp3" preload="auto" aria-hidden="true"></audio>
+    <audio id="notificationSound" src="/static/notification.mp3" preload="auto" aria-hidden="true"></audio>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/static/service-worker.js')
-            .then(() => console.log("✅ Service Worker registered"))
-            .catch(err => console.error("❌ Service Worker error:", err));
+            navigator.serviceWorker.register('/static/service-worker.js')
+                .then(() => console.log("✅ Service Worker registered"))
+                .catch(err => console.error("❌ Service Worker error:", err));
         }
-      </script>
-      <script>
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/static/service-worker.js');
-        }
-      </script>
-      
+    </script>
 </body>
 </html>
 
