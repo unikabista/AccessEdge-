@@ -39,14 +39,22 @@ COMMAND_PATTERNS_BACKEND = {
     'ja': ['写真を撮って', 'カメラを切り替えて', 'テキストを読んで'], # Simplified Japanese patterns
     'zh': ['拍照', '切换相机', '读文字'], # Simplified Chinese patterns
     'ar': ['خذ صورة', 'بدل الكاميرا', 'اقرأ النص'], # Simplified Arabic patterns
-    'en': ['take a photo', 'capture photo', 'take picture', 'capture image', 'describe this', 'what do you see', 'describe scene', 'read the text', 'read text', 'what text do you see', 'read what\'s written', 'flip camera', 'switch camera', 'change camera']
+    'en': ['take a photo', 'capture photo', 'take picture', 'capture image', 'describe this', 
+           'what do you see', 'describe scene', 'read the text', 'read text', 'what text do you see', 
+           'read what\'s written', 'flip camera', 'switch camera', 'change camera']
 }
 
 # Mapping recognized command patterns to actions
 ACTION_MAPPING = {
-    'capture': ['फोटो लो', 'तस्वीर खींचो', 'toma una foto', 'captura una imagen', 'prends une photo', 'capture une image', 'mach ein foto', 'nimm ein bild auf', '写真を撮って', '拍照', 'خذ صورة', 'take a photo', 'capture photo', 'take picture', 'capture image', 'describe this', 'what do you see', 'describe scene'],
-    'read': ['टेक्स्ट पढ़ो', 'lee el texto', 'lis le texte', 'lies den text', 'テキストを読んで', '读文字', 'اقرأ النص', 'read the text', 'read text', 'what text do you see', 'read what\'s written'],
-    'flip': ['कैमरा बदलो', 'cambia la cámara', 'change de caméra', 'wechsle die kamera', 'カメラを切り替えて', '切换相机', 'بدل الكاميرا', 'flip camera', 'switch camera', 'change camera']
+    'capture': ['फोटो लो', 'तस्वीर खींचो', 'toma una foto', 'captura una imagen', 
+                'prends une photo', 'capture une image', 'mach ein foto', 'nimm ein bild auf',
+                  '写真を撮って', '拍照', 'خذ صورة', 'take a photo', 'capture photo', 'take picture', 
+                  'capture image', 'describe this', 'what do you see', 'describe scene'],
+    'read': ['टेक्स्ट पढ़ो', 'lee el texto', 'lis le texte', 'lies den text', 'テキストを読んで',
+              '读文字', 'اقرأ النص', 'read the text', 'read text', 'what text do you see', 
+              'read what\'s written'],
+    'flip': ['कैमरा बदलो', 'cambia la cámara', 'change de caméra', 'wechsle die kamera', 
+             'カメラを切り替えて', '切换相机', 'بدل الكاميرا', 'flip camera', 'switch camera', 'change camera']
 }
 # ...existing code...
 def get_action_from_command(command_text, detected_lang):
