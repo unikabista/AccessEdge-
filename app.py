@@ -17,6 +17,7 @@ print("Preloading AI models...")
 load_models()
 print("Models loaded successfully!")
 
+# ...existing code...
 # Language mapping for backend processing and response
 LANGUAGE_MAP_BACKEND = {
     'hi': 'hi',  # Hindi
@@ -24,7 +25,7 @@ LANGUAGE_MAP_BACKEND = {
     'fr': 'fr',  # French
     'de': 'de',  # German
     'ja': 'ja',  # Japanese
-    'zh': 'zh-CN',  # Chinese simplified
+    'zh': 'zh',  # Chinese simplified (FIXED)
     'ar': 'ar',  # Arabic
     'en': 'en'   # English
 }
@@ -43,11 +44,11 @@ COMMAND_PATTERNS_BACKEND = {
 
 # Mapping recognized command patterns to actions
 ACTION_MAPPING = {
-    'capture': ['फोटो लो', 't तस्वीर खींचो', 'toma una foto', 'captura una imagen', 'prends une photo', 'capture une image', 'mach ein foto', 'nimm ein bild auf', '写真を撮って', '拍照', 'خذ صورة', 'take a photo', 'capture photo', 'take picture', 'capture image', 'describe this', 'what do you see', 'describe scene'],
+    'capture': ['फोटो लो', 'तस्वीर खींचो', 'toma una foto', 'captura una imagen', 'prends une photo', 'capture une image', 'mach ein foto', 'nimm ein bild auf', '写真を撮って', '拍照', 'خذ صورة', 'take a photo', 'capture photo', 'take picture', 'capture image', 'describe this', 'what do you see', 'describe scene'],
     'read': ['टेक्स्ट पढ़ो', 'lee el texto', 'lis le texte', 'lies den text', 'テキストを読んで', '读文字', 'اقرأ النص', 'read the text', 'read text', 'what text do you see', 'read what\'s written'],
     'flip': ['कैमरा बदलो', 'cambia la cámara', 'change de caméra', 'wechsle die kamera', 'カメラを切り替えて', '切换相机', 'بدل الكاميرا', 'flip camera', 'switch camera', 'change camera']
 }
-
+# ...existing code...
 def get_action_from_command(command_text, detected_lang):
     """Determines the action based on the command text and detected language."""
     command_text_lower = command_text.lower()
