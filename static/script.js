@@ -105,14 +105,14 @@ const startCamera = async () => {
 };
 
 // 🔊 Speak text aloud
-function speakText(text, lang = currentLanguage) {
+function speakText(text) {
   console.log('🗣️ Speaking:', text);
   if (!('speechSynthesis' in window)) return;
 
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
+  utterance.lang = 'en-US';
   utterance.pitch = 1;
   utterance.rate = 1;
   utterance.volume = 1;
@@ -145,15 +145,15 @@ function capturePhoto() {
         const finalCaption = '📝 ' + data.caption;
         captionDisplay.innerText = finalCaption;
         // Use the language returned from the backend /capture endpoint for speaking
-        setTimeout(() => speakText(data.caption, LANGUAGE_MAP_FRONTEND[data.language] || currentLanguage), 200);
+        setTimeout(() => speakText(data.caption), 200);
       } else {
         captionDisplay.innerText = '❌ Failed to get caption.';
-        speakText("Sorry, I couldn't describe the scene.", currentLanguage);
+        speakText("Sorry, I couldn't describe the scene.");
       }
     })
     .catch(err => {
       console.error('Error:', err);
-      speakText("Something went wrong capturing the photo.", currentLanguage);
+      speakText("Something went wrong capturing the photo.");
     });
 }
 
@@ -168,20 +168,20 @@ function readTextFromCamera() {
 
   const imageData = canvas.toDataURL('image/png');
 
-  speakText("Reading text. Please hold steady.", currentLanguage);
+  speakText("Reading text. Please hold steady.");
 
   Tesseract.recognize(imageData, 'eng', {
     logger: m => console.log(m)
   }).then(({ data: { text } }) => {
     if (text.trim()) {
       console.log("📝 OCR Text:", text.trim());
-      speakText("I read: " + text.trim(), currentLanguage);
+      speakText("I read: " + text.trim());
     } else {
-      speakText("Sorry, I couldn't detect any readable text.", currentLanguage);
+      speakText("Sorry, I couldn't detect any readable text.");
     }
   }).catch(err => {
     console.error("OCR error:", err);
-    speakText("There was an error reading the text.", currentLanguage);
+    speakText("There was an error reading the text.");
   });
 }
 
@@ -193,14 +193,13 @@ if (SpeechRecognition) {
   recognition = new SpeechRecognition();
   recognition.continuous = true;
   recognition.interimResults = false;
-  // Set initial language for recognition. This will be updated by backend detection.
-  recognition.lang = currentLanguage;
+  recognition.lang = 'en-US';  // Set to English only
 
   recognition.onresult = (event) => {
-    const command = event.results[event.results.length - 1][0].transcript.trim(); // Get the raw transcript
+    const command = event.results[event.results.length - 1][0].transcript.trim();
     console.log('🎙️ Command:', command);
 
-    // Send command to backend for language detection and intent parsing
+    // Send command to backend for intent parsing
     fetch('/api/intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -208,50 +207,45 @@ if (SpeechRecognition) {
     })
     .then(res => res.json())
     .then(data => {
-      console.log('🧠 Backend Intent Data:', data);
-      if (data.status === 'success' && data.action) {
-        // Update current language based on backend detection
-        currentLanguage = LANGUAGE_MAP_FRONTEND[data.language] || currentLanguage; // Use backend language for subsequent speech
-        recognition.lang = currentLanguage; // Update recognition language
+      console.log('Backend response:', data);
 
-        // Execute action based on backend response
-        if (data.action === 'capture') {
-          capturePhoto();
-        } else if (data.action === 'read') {
-          readTextFromCamera();
-        } else if (data.action === 'flip') {
-          currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-          startCamera();
-          speakText("Camera flipped", currentLanguage);
-        } else {
-           console.log('🟡 Unrecognized action from backend:', data.action);
-           speakText("Sorry, I didn't understand that command.", currentLanguage);
+      if (data.status === 'success' && data.action) {
+        // Handle the action based on the detected command
+        switch(data.action) {
+          case 'capture':
+            capturePhoto();
+            break;
+          case 'read':
+            readTextFromCamera();
+            break;
+          case 'flip':
+            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+            startCamera();
+            speakText("Camera flipped");
+            break;
         }
-      } else if (data.status === 'unrecognized_command'){
-         console.log('🟡 Backend could not recognize command.');
-         speakText("Sorry, I didn't understand that command.", currentLanguage);
-      }
-       else {
-        console.error('❌ Error from backend intent parsing:', data.error || 'Unknown error');
-        speakText("There was an error processing your command.", currentLanguage);
+      } else {
+        console.log('Unrecognized command or error:', data.status);
+        speakText("Sorry, I didn't understand that command.");
       }
     })
-    .catch(err => {
-      console.error('❌ Error communicating with backend intent endpoint:', err);
-      speakText("Something went wrong processing your command.", currentLanguage);
+    .catch(error => {
+      console.error('Error processing command:', error);
+      speakText("Something went wrong processing your command.");
     });
   };
 
   recognition.onerror = (event) => {
-    console.error('❌ Speech recognition error:', event.error);
-    // Optionally provide user feedback on speech recognition errors
-    // speakText("Speech recognition error.", currentLanguage);
+    console.error('Speech recognition error:', event.error);
   };
 
   recognition.onend = () => {
-      console.log('🎙️ Speech recognition ended. Restarting...');
-      recognition.start(); // Restart recognition after it ends
+    // Restart recognition if it ends
+    recognition.start();
   };
+
+  // Start recognition
+  recognition.start();
 } else {
   console.warn('❌ Speech recognition not supported');
   captionDisplay.innerText = '❌ Speech recognition not supported in this browser.';
@@ -261,8 +255,8 @@ if (SpeechRecognition) {
 window.addEventListener("load", () => {
   setTimeout(() => {
     splash.style.display = 'none';
-    // Initial greeting - will be in default or previously detected language
-    speakText("Welcome to Dristi. Say capture photo or flip camera.", currentLanguage);
+    // Initial greeting in English
+    speakText("Welcome to Dristi. Say capture photo or flip camera.");
     startCamera();
     recognition?.start(); // Start speech recognition on load
   }, 3000);

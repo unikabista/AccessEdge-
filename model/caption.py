@@ -1,25 +1,17 @@
-from transformers import BlipProcessor, BlipForConditionalGeneration
 from PIL import Image
-import torch
 import pytesseract
 import cv2
 import numpy as np
+import base64
+import requests
+from io import BytesIO
 
 # Set Tesseract path
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# Initialize models and processors globally to avoid reloading
-blip_processor = None
-blip_model = None
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-def load_models():
-    global blip_processor, blip_model
-    if blip_processor is None or blip_model is None:
-        print(f"Loading BLIP Large model on {device}")
-        blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
-        blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large").to(device)
-        blip_model.eval()
+# Eden AI API configuration
+EDEN_AI_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDI2MDA2NmQtMmQzMS00ZWRhLWIwY2UtNmFiYmEyODgyZmFkIiwidHlwZSI6ImFwaV90b2tlbiJ9.SaNmv50QY3MN2mh9LHiPBmM3bf_KSDMPoI_ShWbDRpI"
+EDEN_AI_URL = "https://api.edenai.run/v2/llm/chat"
 
 def extract_text(image):
     # Convert to grayscale
@@ -36,31 +28,85 @@ def extract_text(image):
     text = pytesseract.image_to_string(gray)
     return text.strip()
 
+def get_image_description(base64_image):
+    """Get image description from GPT-4o using Eden AI API"""
+    headers = {
+        "Authorization": f"Bearer {EDEN_AI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Prepare the prompt for image description
+    prompt = """Describe this scene naturally, as if you're telling a friend what you're looking at. 
+    Focus on what would be most helpful for a blind person:
+    - If people are present, describe their gender, approximate age, and what they're doing
+    - What objects and people are present
+    - The colors and visual elements
+    - How things are arranged in the space
+    - Any text that might be important
+    
+    Keep it conversational and natural, avoiding phrases like 'the image shows' or 'I can see'.
+    Be descriptive but concise. Focus on concrete details rather than subjective atmosphere descriptions.
+    When describing people, be specific about their gender, age group, and actions."""
+    
+    payload = {
+        "model": "openai/gpt-4o",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    
+    try:
+        response = requests.post(EDEN_AI_URL, json=payload, headers=headers)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        result = response.json()
+        print("API Response:", result)  # Print full API response for debugging
+        
+        if 'choices' in result and len(result['choices']) > 0:
+            return result['choices'][0]['message']['content']
+        else:
+            print("Unexpected API response format:", result)
+            return "Sorry, I couldn't generate a description. API returned unexpected format."
+            
+    except requests.exceptions.RequestException as e:
+        print(f"Network error calling Eden AI API: {e}")
+        return "Sorry, there was a network error processing the image."
+    except Exception as e:
+        print(f"Error calling Eden AI API: {e}")
+        return "Sorry, there was an error processing the image."
+
 def describe_image(image_path):
-    # Load models if not already loaded
-    load_models()
-    
-    # Process image
-    image = Image.open(image_path).convert("RGB")
-    cv_image = cv2.imread(image_path)
-    
-    # Extract text using OCR
-    text = extract_text(cv_image)
-    
-    # Get image description from BLIP
-    blip_inputs = blip_processor(images=image, return_tensors="pt").to(device)
-    with torch.no_grad():
-        blip_outputs = blip_model.generate(
-            **blip_inputs,
-            max_length=20,
-            num_beams=3,
-            early_stopping=True
-        )
-    
-    # Get BLIP description
-    description = blip_processor.decode(blip_outputs[0], skip_special_tokens=True)
-    
-    # Combine description with text if text is found
-    if text:
-        return f"{description} The text in the image reads: {text}"
-    return description
+    """Describe image using GPT-4o and extract text using OCR"""
+    try:
+        # Read image for OCR
+        cv_image = cv2.imread(image_path)
+        
+        # Extract text using OCR
+        text = extract_text(cv_image)
+        
+        # Convert image to base64 for GPT-4o
+        with open(image_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+        
+        # Get description from GPT-4o
+        description = get_image_description(base64_image)
+        
+        # Only add text information if text was actually found
+        if text and text.strip():  # Check if text exists and is not just whitespace
+            return f"{description} The text in the image reads: {text}"
+        return description
+        
+    except Exception as e:
+        print(f"Error in describe_image: {e}")
+        return "Sorry, I couldn't process the image."
